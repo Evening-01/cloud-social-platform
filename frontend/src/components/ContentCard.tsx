@@ -100,7 +100,8 @@ export function ContentCard({ content }: { content: Content }) {
             <LazyImage
               src={firstMedia.url}
               alt={content.title}
-              className="w-full min-h-48"
+              className="w-full"
+              aspectRatio={firstMedia.width && firstMedia.height ? firstMedia.width / firstMedia.height : undefined}
             />
           )}
           {content.mediaFiles.length > 1 && (

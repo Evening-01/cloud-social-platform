@@ -66,7 +66,12 @@ export function ShareLanding() {
           content.mediaFiles[0].mediaType === 2 ? (
             <video src={content.mediaFiles[0].url} poster={content.mediaFiles[0].coverUrl ?? undefined} controls className="w-full" />
           ) : (
-            <LazyImage src={content.mediaFiles[0].url} alt="" className="w-full min-h-64" />
+            <LazyImage
+              src={content.mediaFiles[0].url}
+              alt=""
+              className="w-full"
+              aspectRatio={content.mediaFiles[0].width && content.mediaFiles[0].height ? content.mediaFiles[0].width / content.mediaFiles[0].height : undefined}
+            />
           )
         )}
         <div className="p-5">
