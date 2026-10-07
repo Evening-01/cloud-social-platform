@@ -76,7 +76,7 @@ export function ContentCard({ content, index = 0 }: { content: Content; index?: 
 
   return (
     <div
-      className="mb-4 break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
+      className="break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* 媒体区 */}

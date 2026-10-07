@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Plus, Search } from "lucide-react"
 import { contentApi, type Content } from "@/lib/api"
 import { ContentCard } from "@/components/ContentCard"
+import { Masonry } from "@/components/Masonry"
 import { Button, Input, Skeleton } from "@/components/ui"
 import { ThemeToggle } from "@/lib/theme"
 
@@ -93,11 +94,14 @@ export function Feed() {
             <p>还没有内容，快来发布第一篇吧～</p>
           </div>
         ) : (
-          <div className="columns-2 gap-4 md:columns-3 lg:columns-4">
-            {items.map((c, i) => (
-              <ContentCard key={c.id} content={c} index={i} />
-            ))}
-          </div>
+          <Masonry
+            items={items}
+            getHeightWeight={(c) => {
+              const m = c.mediaFiles[0]
+              return m?.width && m?.height ? m.height / m.width : 1
+            }}
+            render={(c, i) => <ContentCard key={c.id} content={c} index={i} />}
+          />
         )}
         {loading && items.length > 0 && <p className="py-4 text-center text-sm text-[rgb(var(--muted-foreground))]">加载中...</p>}
         {!hasMore && items.length > 0 && (

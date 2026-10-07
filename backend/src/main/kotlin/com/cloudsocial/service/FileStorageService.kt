@@ -10,6 +10,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.UUID
+import javax.imageio.ImageIO
 
 /**
  * 文件存储服务（本地存储，预留 OSS 扩展点）
@@ -65,6 +66,10 @@ class FileStorageService(
             coverPath = cover
             val (w, h, d) = probeVideo(target)
             width = w; height = h; durationSec = d
+        } else {
+            // 图片探测宽高（只读头部，不解码）
+            val (w, h) = probeImage(target)
+            width = w; height = h
         }
 
         log.info("保存媒体文件: {} (type={}, size={})", relativePath, mediaType, file.size)
@@ -119,6 +124,27 @@ class FileStorageService(
         Triple(w, h, d)
     } catch (e: Exception) {
         Triple(null, null, null)
+    }
+
+    /** 探测图片宽高（只读头部，不解码） */
+    private fun probeImage(imagePath: Path): Pair<Int?, Int?> = try {
+        ImageIO.createImageInputStream(imagePath.toFile()).use { iis ->
+            val readers = ImageIO.getImageReaders(iis)
+            if (readers.hasNext()) {
+                val reader = readers.next()
+                try {
+                    reader.setInput(iis)
+                    Pair(reader.getWidth(0), reader.getHeight(0))
+                } finally {
+                    reader.dispose()
+                }
+            } else {
+                Pair(null, null)
+            }
+        }
+    } catch (e: Exception) {
+        log.warn("图片宽高探测失败: {}", e.message)
+        Pair(null, null)
     }
 
     private fun resolvePath(relativePath: String): Path =
