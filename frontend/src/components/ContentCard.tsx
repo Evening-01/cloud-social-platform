@@ -1,0 +1,145 @@
+import { useState } from "react"
+import { Heart, Share2, MessageCircle } from "lucide-react"
+import type { Content } from "@/lib/api"
+import { likeApi, shareApi } from "@/lib/api"
+import { cn, formatCount, formatTime } from "@/lib/utils"
+import { Dialog, Button } from "@/components/ui"
+
+export function ContentCard({ content }: { content: Content }) {
+  const [liked, setLiked] = useState(content.liked)
+  const [likeCount, setLikeCount] = useState(content.likeCount)
+  const [liking, setLiking] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareCode, setShareCode] = useState<string | null>(null)
+
+  const toggleLike = async () => {
+    if (liking) return
+    setLiking(true)
+    // 乐观 UI
+    const prevLiked = liked
+    const prevCount = likeCount
+    setLiked(!prevLiked)
+    setLikeCount(prevCount + (prevLiked ? -1 : 1))
+    try {
+      if (prevLiked) {
+        const c = await likeApi.unlike(content.id)
+        setLikeCount(c)
+      } else {
+        const c = await likeApi.like(content.id)
+        setLikeCount(c)
+      }
+    } catch {
+      // 失败回滚
+      setLiked(prevLiked)
+      setLikeCount(prevCount)
+    } finally {
+      setLiking(false)
+    }
+  }
+
+  const handleShare = async () => {
+    setShareOpen(true)
+    try {
+      const res = await shareApi.create(content.id, 0)
+      const origin = window.location.origin
+      setShareCode(`${origin}/s/${res.shortCode}`)
+    } catch {
+      setShareCode(null)
+    }
+  }
+
+  const firstMedia = content.mediaFiles[0]
+
+  return (
+    <div className="mb-4 break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      {/* 媒体区 */}
+      {firstMedia && (
+        <div className="relative bg-[rgb(var(--muted))]">
+          {firstMedia.mediaType === 2 ? (
+            <video
+              src={firstMedia.url}
+              poster={firstMedia.coverUrl ?? undefined}
+              controls
+              preload="metadata"
+              className="w-full object-cover"
+            />
+          ) : (
+            <img
+              src={firstMedia.url}
+              alt={content.title}
+              loading="lazy"
+              className="w-full object-cover"
+              style={{ backgroundColor: "rgb(var(--muted))" }}
+            />
+          )}
+          {content.mediaFiles.length > 1 && (
+            <span className="absolute top-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
+              +{content.mediaFiles.length - 1}
+            </span>
+          )}
+          {content.contentType === 2 && (
+            <span className="absolute top-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">视频</span>
+          )}
+        </div>
+      )}
+
+      {/* 内容区 */}
+      <div className="p-3">
+        <h3 className="mb-2 line-clamp-2 text-sm font-medium leading-snug">{content.title}</h3>
+        {content.description && (
+          <p className="mb-2 line-clamp-2 text-xs text-[rgb(var(--muted-foreground))]">{content.description}</p>
+        )}
+
+        {/* 作者 + 时间 */}
+        <div className="mb-2 flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[rgb(var(--primary))] text-xs text-white">
+            {(content.author?.nickname ?? "用").charAt(0)}
+          </div>
+          <span className="text-xs text-[rgb(var(--muted-foreground))]">{content.author?.nickname ?? "匿名"}</span>
+          <span className="text-xs text-[rgb(var(--muted-foreground))]">·</span>
+          <span className="text-xs text-[rgb(var(--muted-foreground))]">{formatTime(content.createdAt)}</span>
+        </div>
+
+        {/* 操作栏 */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={toggleLike}
+            className={cn("group flex items-center gap-1 text-sm transition-all", liked && "text-[rgb(var(--primary))]")}
+          >
+            <Heart
+              className={cn("h-5 w-5 transition-transform group-active:scale-125", liked && "fill-current")}
+            />
+            <span>{formatCount(likeCount)}</span>
+          </button>
+          <button className="flex items-center gap-1 text-sm text-[rgb(var(--muted-foreground))]">
+            <MessageCircle className="h-5 w-5" />
+          </button>
+          <button onClick={handleShare} className="flex items-center gap-1 text-sm text-[rgb(var(--muted-foreground))]">
+            <Share2 className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* 分享弹窗 */}
+      <Dialog open={shareOpen} onClose={() => setShareOpen(false)} title="分享链接">
+        {shareCode ? (
+          <div className="space-y-3">
+            <p className="text-xs text-[rgb(var(--muted-foreground))]">复制链接分享给好友，对方即可访问点赞：</p>
+            <div className="flex items-center gap-2">
+              <input readOnly value={shareCode} className="w-full rounded-xl border border-[rgb(var(--border))] px-3 py-2 text-xs" />
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareCode)
+                }}
+              >
+                复制
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-[rgb(var(--muted-foreground))]">生成中...</p>
+        )}
+      </Dialog>
+    </div>
+  )
+}

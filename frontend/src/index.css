@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: 255 255 255;
+  --foreground: 15 15 15;
+  --primary: 255 90 95;
+  --primary-foreground: 255 255 255;
+  --card: 255 255 255;
+  --card-foreground: 15 15 15;
+  --muted: 245 245 245;
+  --muted-foreground: 115 115 115;
+  --border: 229 229 229;
+  --ring: 255 90 95;
+  --radius: 0.875rem;
+}
+
+.dark {
+  --background: 15 15 15;
+  --foreground: 245 245 245;
+  --primary: 255 90 95;
+  --primary-foreground: 255 255 255;
+  --card: 24 24 24;
+  --card-foreground: 245 245 245;
+  --muted: 40 40 40;
+  --muted-foreground: 163 163 163;
+  --border: 40 40 40;
+  --ring: 255 90 95;
+}
+
+* {
+  border-color: rgb(var(--border) / 1);
+}
+
+body {
+  background-color: rgb(var(--background) / 1);
+  color: rgb(var(--foreground) / 1);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+}
