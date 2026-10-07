@@ -26,3 +26,12 @@ application-local.yml
 
 # 日志
 *.log
+*.log.err
+
+# 临时测试文件
+test-image.png
+test-*.png
+bootrun.log*
+vite.log
+vite.err.log
+dev.log*
