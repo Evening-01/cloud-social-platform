@@ -8,7 +8,7 @@ import { Lightbox } from "@/components/Lightbox"
 import { CommentDialog } from "@/components/CommentDialog"
 import { LazyImage } from "@/components/LazyImage"
 
-export function ContentCard({ content }: { content: Content }) {
+export function ContentCard({ content, index = 0 }: { content: Content; index?: number }) {
   const [liked, setLiked] = useState(content.liked)
   const [likeCount, setLikeCount] = useState(content.likeCount)
   const [liking, setLiking] = useState(false)
@@ -75,7 +75,10 @@ export function ContentCard({ content }: { content: Content }) {
   }, [content.id])
 
   return (
-    <div className="mb-4 break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <div
+      className="mb-4 break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
+      style={{ animationDelay: `${index * 60}ms` }}
+    >
       {/* 媒体区 */}
       {firstMedia && (
         <div
@@ -139,7 +142,8 @@ export function ContentCard({ content }: { content: Content }) {
             className={cn("relative group flex items-center gap-1 text-sm transition-all", liked && "text-[rgb(var(--primary))]")}
           >
             <Heart
-              className={cn("h-5 w-5 transition-transform group-active:scale-125", liked && "fill-current")}
+              key={liked ? "liked" : "unliked"}
+              className={cn("h-5 w-5 transition-transform group-active:scale-125", liked && "fill-current animate-pop")}
             />
             <span>{formatCount(likeCount)}</span>
             {/* 飘心特效 */}

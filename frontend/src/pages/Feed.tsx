@@ -94,8 +94,8 @@ export function Feed() {
           </div>
         ) : (
           <div className="columns-2 gap-4 md:columns-3 lg:columns-4">
-            {items.map((c) => (
-              <ContentCard key={c.id} content={c} />
+            {items.map((c, i) => (
+              <ContentCard key={c.id} content={c} index={i} />
             ))}
           </div>
         )}

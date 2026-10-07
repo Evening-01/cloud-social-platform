@@ -71,6 +71,37 @@ body {
   animation: shimmer 1.2s ease-in-out infinite;
 }
 
+/* 卡片进入动画 */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+/* 点赞弹跳动画 */
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop {
+  animation: pop 0.3s ease-out;
+}
+
 /* 卡片悬停 */
 .line-clamp-2 {
   display: -webkit-box;
