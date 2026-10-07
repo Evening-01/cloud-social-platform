@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Heart, Share2, MessageCircle } from "lucide-react"
 import type { Content } from "@/lib/api"
 import { likeApi, shareApi } from "@/lib/api"
 import { cn, formatCount, formatTime } from "@/lib/utils"
 import { Dialog, Button } from "@/components/ui"
+import { Lightbox } from "@/components/Lightbox"
 
 export function ContentCard({ content }: { content: Content }) {
   const [liked, setLiked] = useState(content.liked)
@@ -11,15 +12,26 @@ export function ContentCard({ content }: { content: Content }) {
   const [liking, setLiking] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [shareCode, setShareCode] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<number | null>(null)
+  const [hearts, setHearts] = useState<{ id: number; x: number }[]>([])
+  const videoRef = useRef<HTMLVideoElement>(null)
 
-  const toggleLike = async () => {
+  const toggleLike = async (e: React.MouseEvent) => {
     if (liking) return
     setLiking(true)
-    // 乐观 UI
     const prevLiked = liked
     const prevCount = likeCount
     setLiked(!prevLiked)
     setLikeCount(prevCount + (prevLiked ? -1 : 1))
+
+    // 飘心特效（仅点赞时）
+    if (!prevLiked) {
+      const btn = (e.currentTarget as HTMLElement).getBoundingClientRect()
+      const id = Date.now()
+      setHearts((h) => [...h, { id, x: e.clientX - btn.left }])
+      setTimeout(() => setHearts((h) => h.filter((x) => x.id !== id)), 1000)
+    }
+
     try {
       if (prevLiked) {
         const c = await likeApi.unlike(content.id)
@@ -29,7 +41,6 @@ export function ContentCard({ content }: { content: Content }) {
         setLikeCount(c)
       }
     } catch {
-      // 失败回滚
       setLiked(prevLiked)
       setLikeCount(prevCount)
     } finally {
@@ -54,14 +65,23 @@ export function ContentCard({ content }: { content: Content }) {
     <div className="mb-4 break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       {/* 媒体区 */}
       {firstMedia && (
-        <div className="relative bg-[rgb(var(--muted))]">
+        <div
+          className="relative bg-[rgb(var(--muted))] cursor-zoom-in"
+          onClick={() => firstMedia.mediaType === 1 && setLightbox(0)}
+        >
           {firstMedia.mediaType === 2 ? (
             <video
+              ref={videoRef}
               src={firstMedia.url}
               poster={firstMedia.coverUrl ?? undefined}
               controls
               preload="metadata"
+              muted
+              loop
+              playsInline
               className="w-full object-cover"
+              onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+              onMouseLeave={(e) => e.currentTarget.pause()}
             />
           ) : (
             <img
@@ -104,12 +124,22 @@ export function ContentCard({ content }: { content: Content }) {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleLike}
-            className={cn("group flex items-center gap-1 text-sm transition-all", liked && "text-[rgb(var(--primary))]")}
+            className={cn("relative group flex items-center gap-1 text-sm transition-all", liked && "text-[rgb(var(--primary))]")}
           >
             <Heart
               className={cn("h-5 w-5 transition-transform group-active:scale-125", liked && "fill-current")}
             />
             <span>{formatCount(likeCount)}</span>
+            {/* 飘心特效 */}
+            {hearts.map((h) => (
+              <span
+                key={h.id}
+                className="pointer-events-none absolute -top-6 animate-heart"
+                style={{ left: h.x - 8 }}
+              >
+                ❤️
+              </span>
+            ))}
           </button>
           <button className="flex items-center gap-1 text-sm text-[rgb(var(--muted-foreground))]">
             <MessageCircle className="h-5 w-5" />
@@ -127,19 +157,23 @@ export function ContentCard({ content }: { content: Content }) {
             <p className="text-xs text-[rgb(var(--muted-foreground))]">复制链接分享给好友，对方即可访问点赞：</p>
             <div className="flex items-center gap-2">
               <input readOnly value={shareCode} className="w-full rounded-xl border border-[rgb(var(--border))] px-3 py-2 text-xs" />
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(shareCode)
-                }}
-              >
-                复制
-              </Button>
+              <Button onClick={() => navigator.clipboard.writeText(shareCode)}>复制</Button>
             </div>
           </div>
         ) : (
           <p className="text-sm text-[rgb(var(--muted-foreground))]">生成中...</p>
         )}
       </Dialog>
+
+      {/* 图片预览器 */}
+      {lightbox !== null && (
+        <Lightbox
+          media={content.mediaFiles}
+          index={lightbox}
+          onClose={() => setLightbox(null)}
+          onNavigate={(i) => setLightbox(i)}
+        />
+      )}
     </div>
   )
 }

@@ -4,6 +4,8 @@ import { Heart, Share2 } from "lucide-react"
 import { contentApi, likeApi, shareApi, type Content } from "@/lib/api"
 import { Button, Dialog, Skeleton } from "@/components/ui"
 import { formatCount, formatTime } from "@/lib/utils"
+import { ThemeToggle } from "@/lib/theme"
+import { Lightbox } from "@/components/Lightbox"
 
 export function Detail() {
   const { id } = useParams()
@@ -13,6 +15,7 @@ export function Detail() {
   const [likeCount, setLikeCount] = useState(0)
   const [shareOpen, setShareOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
+  const [lightbox, setLightbox] = useState<number | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -64,6 +67,7 @@ export function Detail() {
       <header className="sticky top-0 z-40 border-b border-[rgb(var(--border))] bg-[rgb(var(--background))]/90 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center px-4 py-3">
           <a href="/" className="text-lg font-bold text-[rgb(var(--primary))]">← 返回</a>
+          <div className="ml-auto"><ThemeToggle /></div>
         </div>
       </header>
 
@@ -83,11 +87,11 @@ export function Detail() {
 
         {/* 媒体列表 */}
         <div className="space-y-3">
-          {content.mediaFiles.map((m) =>
+          {content.mediaFiles.map((m, i) =>
             m.mediaType === 2 ? (
               <video key={m.id} src={m.url} poster={m.coverUrl ?? undefined} controls className="w-full rounded-2xl" />
             ) : (
-              <img key={m.id} src={m.url} className="w-full rounded-2xl" />
+              <img key={m.id} src={m.url} className="w-full cursor-zoom-in rounded-2xl" onClick={() => setLightbox(i)} />
             )
           )}
         </div>
@@ -114,6 +118,15 @@ export function Detail() {
           <p className="text-sm">生成中...</p>
         )}
       </Dialog>
+
+      {lightbox !== null && (
+        <Lightbox
+          media={content.mediaFiles}
+          index={lightbox}
+          onClose={() => setLightbox(null)}
+          onNavigate={(i) => setLightbox(i)}
+        />
+      )}
     </div>
   )
 }

@@ -1,0 +1,16 @@
+{
+  "name": "云社 - 图文视频分享社区",
+  "short_name": "云社",
+  "description": "图文视频分享社交平台",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF5A5F",
+  "icons": [
+    {
+      "src": "/icons.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

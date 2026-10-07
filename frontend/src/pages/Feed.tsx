@@ -3,6 +3,7 @@ import { Plus, Search } from "lucide-react"
 import { contentApi, type Content } from "@/lib/api"
 import { ContentCard } from "@/components/ContentCard"
 import { Button, Input, Skeleton } from "@/components/ui"
+import { ThemeToggle } from "@/lib/theme"
 
 export function Feed() {
   const [items, setItems] = useState<Content[]>([])
@@ -59,6 +60,7 @@ export function Feed() {
             />
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             {user ? (
               <>
                 <span className="hidden text-sm sm:block">{user.nickname}</span>
