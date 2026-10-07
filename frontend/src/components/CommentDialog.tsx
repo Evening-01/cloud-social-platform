@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Send, Trash2 } from "lucide-react"
 import { commentApi, type Comment } from "@/lib/api"
 import { Button, Dialog, Input, Skeleton } from "@/components/ui"
@@ -10,19 +10,26 @@ export function CommentDialog({ contentId, open, onClose }: { contentId: number;
   const [loading, setLoading] = useState(true)
   const [text, setText] = useState("")
   const [sending, setSending] = useState(false)
+  const loadedRef = useRef<number | null>(null)
   const user = JSON.parse(localStorage.getItem("user") || "null")
 
   const load = () => {
+    // 同一内容已加载过则用缓存，避免重复请求
+    if (loadedRef.current === contentId) return
     setLoading(true)
     commentApi
       .list(contentId)
-      .then(setComments)
+      .then((list) => {
+        setComments(list)
+        loadedRef.current = contentId
+      })
       .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    if (open) load()
-  }, [contentId, open])
+    // 挂载即预加载评论，点开弹窗时数据已就绪（不卡）
+    load()
+  }, [contentId])
 
   const submit = async () => {
     if (!text.trim() || sending) return
