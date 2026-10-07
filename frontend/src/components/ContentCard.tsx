@@ -6,6 +6,7 @@ import { cn, formatCount, formatTime } from "@/lib/utils"
 import { Dialog, Button } from "@/components/ui"
 import { Lightbox } from "@/components/Lightbox"
 import { CommentDialog } from "@/components/CommentDialog"
+import { LazyImage } from "@/components/LazyImage"
 
 export function ContentCard({ content }: { content: Content }) {
   const [liked, setLiked] = useState(content.liked)
@@ -96,12 +97,10 @@ export function ContentCard({ content }: { content: Content }) {
               onMouseLeave={(e) => e.currentTarget.pause()}
             />
           ) : (
-            <img
+            <LazyImage
               src={firstMedia.url}
               alt={content.title}
-              loading="lazy"
-              className="w-full object-cover"
-              style={{ backgroundColor: "rgb(var(--muted))" }}
+              className="w-full min-h-48"
             />
           )}
           {content.mediaFiles.length > 1 && (

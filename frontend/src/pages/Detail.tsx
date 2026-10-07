@@ -6,6 +6,7 @@ import { Button, Dialog, Skeleton } from "@/components/ui"
 import { formatCount, formatTime } from "@/lib/utils"
 import { ThemeToggle } from "@/lib/theme"
 import { Lightbox } from "@/components/Lightbox"
+import { LazyImage } from "@/components/LazyImage"
 
 export function Detail() {
   const { id } = useParams()
@@ -91,7 +92,7 @@ export function Detail() {
             m.mediaType === 2 ? (
               <video key={m.id} src={m.url} poster={m.coverUrl ?? undefined} controls className="w-full rounded-2xl" />
             ) : (
-              <img key={m.id} src={m.url} className="w-full cursor-zoom-in rounded-2xl" onClick={() => setLightbox(i)} />
+              <LazyImage key={m.id} src={m.url} alt="" className="w-full min-h-64 rounded-2xl" onClick={() => setLightbox(i)} />
             )
           )}
         </div>

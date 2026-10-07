@@ -58,6 +58,19 @@ body {
   animation: heart-float 0.9s ease-out forwards;
 }
 
+/* 图片加载 shimmer 动画 */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.animate-shimmer {
+  animation: shimmer 1.5s linear infinite;
+}
+
 /* 卡片悬停 */
 .line-clamp-2 {
   display: -webkit-box;
