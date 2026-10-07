@@ -38,6 +38,7 @@ class SecurityConfig(
                     // 公开端点
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/share/**").permitAll()
+                    .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/content/**").permitAll()
                     // 其余需要认证
