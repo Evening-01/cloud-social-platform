@@ -32,7 +32,9 @@ export function LazyImage({
     >
       {/* 加载中骨架屏 */}
       {!loaded && !error && (
-        <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-[rgb(var(--muted))] via-[rgb(var(--card))] to-[rgb(var(--muted))] bg-[length:200%_100%]" />
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-y-0 w-1/3 animate-shimmer bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+        </div>
       )}
 
       {/* 加载失败占位 */}
@@ -51,7 +53,7 @@ export function LazyImage({
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
           className={cn(
-            "block transition-opacity duration-500",
+            "block transition-opacity duration-150",
             aspectRatio ? "h-full w-full object-cover" : "h-auto w-full",
             loaded ? "opacity-100" : "opacity-0"
           )}

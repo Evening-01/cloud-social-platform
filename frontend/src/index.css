@@ -58,17 +58,17 @@ body {
   animation: heart-float 0.9s ease-out forwards;
 }
 
-/* 图片加载 shimmer 动画 */
+/* 图片加载 shimmer 动画（transform 硬件加速） */
 @keyframes shimmer {
   0% {
-    background-position: 200% 0;
+    transform: translateX(-100%);
   }
   100% {
-    background-position: -200% 0;
+    transform: translateX(300%);
   }
 }
 .animate-shimmer {
-  animation: shimmer 1.5s linear infinite;
+  animation: shimmer 1.2s ease-in-out infinite;
 }
 
 /* 卡片悬停 */
