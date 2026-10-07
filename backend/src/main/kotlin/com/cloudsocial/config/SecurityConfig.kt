@@ -41,6 +41,8 @@ class SecurityConfig(
                     .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/content/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/like/**").permitAll()
                     // 其余需要认证
                     .anyRequest().authenticated()
             }

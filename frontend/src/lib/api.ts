@@ -39,6 +39,15 @@ export interface Content {
   createdAt: string
 }
 
+export interface Comment {
+  id: number
+  userId: number
+  contentId: number
+  content: string
+  author: User | null
+  createdAt: string
+}
+
 export interface PageResponse<T> {
   items: T[]
   page: number
@@ -104,6 +113,23 @@ export const likeApi = {
   like: (contentId: number) => request(api.post<ApiResponse<number>>(`/like/${contentId}`)),
   unlike: (contentId: number) => request(api.delete<ApiResponse<number>>(`/like/${contentId}`)),
   count: (contentId: number) => request(api.get<ApiResponse<number>>(`/like/${contentId}/count`)),
+}
+
+export interface Comment {
+  id: number
+  contentId: number
+  userId: number
+  author: User | null
+  content: string
+  createdAt: string
+}
+
+export const commentApi = {
+  list: (contentId: number) => request(api.get<ApiResponse<Comment[]>>(`/comment/${contentId}`)),
+  count: (contentId: number) => request(api.get<ApiResponse<number>>(`/comment/${contentId}/count`)),
+  create: (contentId: number, content: string) =>
+    request(api.post<ApiResponse<Comment>>(`/comment/${contentId}`, { content })),
+  remove: (commentId: number) => request(api.delete<ApiResponse<null>>(`/comment/${commentId}`)),
 }
 
 export const shareApi = {

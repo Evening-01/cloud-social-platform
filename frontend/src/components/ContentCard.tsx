@@ -1,10 +1,11 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Heart, Share2, MessageCircle } from "lucide-react"
 import type { Content } from "@/lib/api"
-import { likeApi, shareApi } from "@/lib/api"
+import { likeApi, shareApi, commentApi } from "@/lib/api"
 import { cn, formatCount, formatTime } from "@/lib/utils"
 import { Dialog, Button } from "@/components/ui"
 import { Lightbox } from "@/components/Lightbox"
+import { CommentDialog } from "@/components/CommentDialog"
 
 export function ContentCard({ content }: { content: Content }) {
   const [liked, setLiked] = useState(content.liked)
@@ -12,12 +13,19 @@ export function ContentCard({ content }: { content: Content }) {
   const [liking, setLiking] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [shareCode, setShareCode] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [commentOpen, setCommentOpen] = useState(false)
+  const [commentCount, setCommentCount] = useState(0)
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [hearts, setHearts] = useState<{ id: number; x: number }[]>([])
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const toggleLike = async (e: React.MouseEvent) => {
     if (liking) return
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/login"
+      return
+    }
     setLiking(true)
     const prevLiked = liked
     const prevCount = likeCount
@@ -60,6 +68,10 @@ export function ContentCard({ content }: { content: Content }) {
   }
 
   const firstMedia = content.mediaFiles[0]
+
+  useEffect(() => {
+    commentApi.count(content.id).then(setCommentCount).catch(() => {})
+  }, [content.id])
 
   return (
     <div className="mb-4 break-inside-avoid rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -141,8 +153,9 @@ export function ContentCard({ content }: { content: Content }) {
               </span>
             ))}
           </button>
-          <button className="flex items-center gap-1 text-sm text-[rgb(var(--muted-foreground))]">
+          <button onClick={() => setCommentOpen(true)} className="flex items-center gap-1 text-sm text-[rgb(var(--muted-foreground))]">
             <MessageCircle className="h-5 w-5" />
+            {commentCount > 0 && <span>{formatCount(commentCount)}</span>}
           </button>
           <button onClick={handleShare} className="flex items-center gap-1 text-sm text-[rgb(var(--muted-foreground))]">
             <Share2 className="h-5 w-5" />
@@ -157,13 +170,25 @@ export function ContentCard({ content }: { content: Content }) {
             <p className="text-xs text-[rgb(var(--muted-foreground))]">复制链接分享给好友，对方即可访问点赞：</p>
             <div className="flex items-center gap-2">
               <input readOnly value={shareCode} className="w-full rounded-xl border border-[rgb(var(--border))] px-3 py-2 text-xs" />
-              <Button onClick={() => navigator.clipboard.writeText(shareCode)}>复制</Button>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareCode).then(() => {
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  })
+                }}
+              >
+                {copied ? "已复制" : "复制"}
+              </Button>
             </div>
           </div>
         ) : (
           <p className="text-sm text-[rgb(var(--muted-foreground))]">生成中...</p>
         )}
       </Dialog>
+
+      {/* 评论面板 */}
+      <CommentDialog contentId={content.id} open={commentOpen} onClose={() => setCommentOpen(false)} />
 
       {/* 图片预览器 */}
       {lightbox !== null && (

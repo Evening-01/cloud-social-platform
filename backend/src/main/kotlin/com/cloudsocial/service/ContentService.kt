@@ -8,6 +8,7 @@ import com.cloudsocial.dto.MediaFileResponse
 import com.cloudsocial.dto.PageResponse
 import com.cloudsocial.exception.BusinessException
 import com.cloudsocial.repository.ContentRepository
+import com.cloudsocial.repository.LikeRecordRepository
 import com.cloudsocial.repository.MediaFileRepository
 import com.cloudsocial.repository.UserRepository
 import org.springframework.data.domain.PageRequest
@@ -23,6 +24,7 @@ class ContentService(
     private val contentRepository: ContentRepository,
     private val mediaFileRepository: MediaFileRepository,
     private val userRepository: UserRepository,
+    private val likeRecordRepository: LikeRecordRepository,
     private val fileStorageService: FileStorageService
 ) {
 
@@ -77,11 +79,11 @@ class ContentService(
             mediaResponses.add(mediaFile.toResponse())
         }
 
-        return content.toResponse(mediaResponses, author = userRepository.findById(userId).orElse(null))
+        return content.toResponse(mediaResponses, author = userRepository.findById(userId).orElse(null), liked = false)
     }
 
     /** Feed 流查询（分页） */
-    fun getFeed(page: Int, size: Int, keyword: String? = null): PageResponse<ContentResponse> {
+    fun getFeed(page: Int, size: Int, keyword: String? = null, viewerId: Long? = null): PageResponse<ContentResponse> {
         val pageable = PageRequest.of(page, size.coerceIn(1, 50))
         val result = if (keyword.isNullOrBlank()) {
             contentRepository.findByDeletedFalse(pageable)
@@ -90,7 +92,12 @@ class ContentService(
         }
         val items = result.content.map { content ->
             val mediaFiles = mediaFileRepository.findByContentIdOrderBySortOrderAsc(content.id)
-            content.toResponse(mediaFiles.map { it.toResponse() }, author = userRepository.findById(content.userId).orElse(null))
+            val liked = viewerId?.let { likeRecordRepository.existsByUserIdAndContentId(it, content.id) } ?: false
+            content.toResponse(
+                mediaFiles.map { it.toResponse() },
+                author = userRepository.findById(content.userId).orElse(null),
+                liked = liked
+            )
         }
         return PageResponse(
             items = items,
@@ -102,13 +109,15 @@ class ContentService(
     }
 
     /** 内容详情 */
-    fun getContent(id: Long): ContentResponse {
+    fun getContent(id: Long, viewerId: Long? = null): ContentResponse {
         val content = contentRepository.findByIdAndDeletedFalse(id)
             ?: throw BusinessException(ErrorCode.CONTENT_NOT_FOUND)
         val mediaFiles = mediaFileRepository.findByContentIdOrderBySortOrderAsc(content.id)
+        val liked = viewerId?.let { likeRecordRepository.existsByUserIdAndContentId(it, content.id) } ?: false
         return content.toResponse(
             mediaFiles.map { it.toResponse() },
-            author = userRepository.findById(content.userId).orElse(null)
+            author = userRepository.findById(content.userId).orElse(null),
+            liked = liked
         )
     }
 
@@ -119,7 +128,8 @@ class ContentService(
 
     private fun Content.toResponse(
         mediaFiles: List<MediaFileResponse>,
-        author: com.cloudsocial.domain.User?
+        author: com.cloudsocial.domain.User?,
+        liked: Boolean = false
     ): ContentResponse = ContentResponse(
         id = id,
         userId = userId,
@@ -133,6 +143,7 @@ class ContentService(
         description = description,
         contentType = contentType,
         likeCount = likeCount,
+        liked = liked,
         mediaFiles = mediaFiles,
         createdAt = createdAt
     )

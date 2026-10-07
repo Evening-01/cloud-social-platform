@@ -54,6 +54,11 @@ class LikeService(
 
         // Redis 计数 +1
         val newCount = redis.opsForValue().increment("$LIKE_COUNT_KEY:$contentId") ?: 1
+        // 同步更新 MySQL content.like_count（保证 Feed 查询一致）
+        contentRepository.findById(contentId).ifPresent { c ->
+            c.likeCount = newCount.toInt()
+            contentRepository.save(c)
+        }
         return newCount.toInt()
     }
 
@@ -73,7 +78,13 @@ class LikeService(
         if (current > 0) {
             redis.opsForValue().decrement("$LIKE_COUNT_KEY:$contentId")
         }
-        return (current - 1).coerceAtLeast(0)
+        val newCount = (current - 1).coerceAtLeast(0)
+        // 同步更新 MySQL content.like_count
+        contentRepository.findById(contentId).ifPresent { c ->
+            c.likeCount = newCount
+            contentRepository.save(c)
+        }
+        return newCount
     }
 
     /** 当前点赞数（优先 Redis，回源 MySQL） */

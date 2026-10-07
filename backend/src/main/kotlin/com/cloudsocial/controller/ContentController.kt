@@ -41,12 +41,16 @@ class ContentController(
     fun feed(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
-        @RequestParam(required = false) keyword: String?
+        @RequestParam(required = false) keyword: String?,
+        @AuthenticationPrincipal principal: UserPrincipal?
     ): ApiResponse<PageResponse<ContentResponse>> =
-        ApiResponse.success(contentService.getFeed(page, size, keyword))
+        ApiResponse.success(contentService.getFeed(page, size, keyword, principal?.userId))
 
     /** 内容详情 */
     @GetMapping("/{id}")
-    fun detail(@PathVariable id: Long): ApiResponse<ContentResponse> =
-        ApiResponse.success(contentService.getContent(id))
+    fun detail(
+        @PathVariable id: Long,
+        @AuthenticationPrincipal principal: UserPrincipal?
+    ): ApiResponse<ContentResponse> =
+        ApiResponse.success(contentService.getContent(id, principal?.userId))
 }
