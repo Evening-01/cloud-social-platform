@@ -1,0 +1,28 @@
+# Java / Gradle
+backend/build/
+backend/.gradle/
+*.class
+target/
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 环境 / 密钥（严禁提交）
+.env
+*.pem
+application-prod.yml
+application-local.yml
+
+# 日志
+*.log
